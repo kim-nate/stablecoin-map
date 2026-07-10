@@ -74,6 +74,8 @@ svg:active{cursor:grabbing}
 .ni a.t:hover{color:#2563eb;text-decoration:underline}
 .ni .nlink{font-size:11px;color:#9ca3af;text-decoration:none;margin-left:6px}
 .ni .nlink:hover{color:#2563eb}
+.lnknm{cursor:pointer}
+.lnknm:hover{color:#2563eb;text-decoration:underline}
 @media (max-width:760px){
   .brand span{display:none}
   #search{width:150px}
@@ -96,7 +98,7 @@ svg:active{cursor:grabbing}
 <div id="graph"><svg id="svg"></svg></div>
 <div id="legend"></div>
 <div id="stats"></div>
-<div id="hint">원 크기 = 뉴스 수 · 선 굵기 = 함께 언급 횟수 · 선 색 = 주요 카테고리<br>노드 클릭 → 상세 · 배경 드래그/휠 → 이동/줌</div>
+<div id="hint">원 크기 = 뉴스 수 · 선 굵기 = 함께 언급 횟수 · 선 색 = 주요 카테고리<br>노드 클릭 → 상세 · <b>선(관계) 클릭 → 근거 뉴스</b> · 배경 드래그/휠 → 이동/줌</div>
 <div id="tooltip"></div>
 <aside id="panel">
   <div class="head"><h2 id="p-title"></h2><div class="meta" id="p-meta"></div><button class="close" id="p-close">✕</button></div>
@@ -127,7 +129,7 @@ const R = n => 5 + Math.sqrt(n.count)*2.6;
 const svg = d3.select("#svg");
 const W = () => window.innerWidth, H = () => window.innerHeight;
 const g = svg.append("g");
-const gLink = g.append("g"), gNode = g.append("g");
+const gLink = g.append("g"), gLinkHit = g.append("g"), gNode = g.append("g");
 const zoom = d3.zoom().scaleExtent([0.2,4]).extent(()=>[[0,0],[W(),H()]]).on("zoom", e=>g.attr("transform", e.transform));
 svg.call(zoom).on("dblclick.zoom", null);
 svg.on("click", ()=>{ select(null); });
@@ -147,9 +149,19 @@ const linkSel = gLink.selectAll("line").data(links).join("line")
   .attr("stroke", l=>CAT_COLOR[l.cat]||"#cbd5e1")
   .attr("stroke-width", l=>Math.min(7, .8 + l.w*0.9))
   .style("cursor","pointer")
-  .on("click",(e,l)=>{ e.stopPropagation(); select({kind:"link",obj:l}); })
-  .on("mousemove",(e,l)=>{ if(!selected) hoverLink(l); tip(e, `<b>${esc(nm(l.sid))} ↔ ${esc(nm(l.tid))}</b><div class="tt-sub">함께 언급 ${l.w}회 · ${esc(l.cat)}</div>`); })
-  .on("mouseout",()=>{ hideTip(); if(!selected) applyHighlight(); });
+  .on("click", linkClick).on("mousemove", linkMove).on("mouseout", linkOut);
+
+function linkClick(e,l){ e.stopPropagation(); select({kind:"link",obj:l}); }
+function linkMove(e,l){ if(!selected) hoverLink(l); tip(e, `<b>${esc(nm(l.sid))} ↔ ${esc(nm(l.tid))}</b><div class="tt-sub">함께 언급 ${l.w}회 · ${esc(l.cat)} · 클릭 → 근거 뉴스</div>`); }
+function linkOut(){ hideTip(); if(!selected) applyHighlight(); }
+
+/* 넓은 클릭 히트영역 (투명 선) — 얇은 엣지도 쉽게 클릭 */
+const linkHitSel = gLinkHit.selectAll("line").data(links).join("line")
+  .attr("stroke","rgba(0,0,0,0)")
+  .attr("stroke-width", l=>Math.max(14, 2+l.w))
+  .attr("stroke-linecap","round")
+  .style("cursor","pointer")
+  .on("click", linkClick).on("mousemove", linkMove).on("mouseout", linkOut);
 
 const nodeSel = gNode.selectAll("g").data(nodes).join("g")
   .attr("class", d=>"node"+(d.count>=10?" big":""))
@@ -169,6 +181,7 @@ nodeSel.append("text").attr("dy", d=>R(d)+12).text(d=>d.name);
 
 sim.on("tick", ()=>{
   linkSel.attr("x1",l=>l.source.x).attr("y1",l=>l.source.y).attr("x2",l=>l.target.x).attr("y2",l=>l.target.y);
+  linkHitSel.attr("x1",l=>l.source.x).attr("y1",l=>l.source.y).attr("x2",l=>l.target.x).attr("y2",l=>l.target.y);
   nodeSel.attr("transform", d=>`translate(${d.x},${d.y})`);
 });
 
@@ -183,6 +196,7 @@ function refresh(){
   const vl = visLinks();
   const connected = new Set(); vl.forEach(l=>{connected.add(l.sid);connected.add(l.tid);});
   linkSel.style("display", l=>linkVisible(l)?null:"none");
+  linkHitSel.style("display", l=>linkVisible(l)?null:"none");
   nodeSel.style("display", d=>activeTypes.has(d.type)?null:"none");
   nodeSel.classed("iso", d=>!connected.has(d.id));
   sim.force("link").links(vl);
@@ -259,19 +273,20 @@ function renderNodePanel(d){
     .sort((a,b)=>b.w-a.w);
   let html = "";
   if(partners.length){
-    html += `<div class="sect"><h3>연결된 기업/기관 (${partners.length})</h3><div class="partners">` +
-      partners.map(p=>{ const pn=byId.get(p.id); return `<span class="pt" data-nid="${p.id}"><span class="dot" style="background:${TYPE_COLOR[pn.type]||"#6b7280"}"></span>${esc(pn.name)} <span class="w">×${p.w}</span></span>`; }).join("") + `</div></div>`;
+    html += `<div class="sect"><h3>연결된 기업/기관 (${partners.length}) <span style="font-weight:400">— 클릭하면 관계 근거 뉴스</span></h3><div class="partners">` +
+      partners.map((p,i)=>{ const pn=byId.get(p.id); return `<span class="pt" data-pi="${i}" title="${esc(d.name)} ↔ ${esc(pn.name)} 근거 뉴스 보기"><span class="dot" style="background:${TYPE_COLOR[pn.type]||"#6b7280"}"></span>${esc(pn.name)} <span class="w">×${p.w}</span></span>`; }).join("") + `</div></div>`;
   }
   html += `<div class="sect"><h3>관련 뉴스 (${d.count})</h3><div class="news">` + d.news.map(newsItem).join("") + `</div></div>`;
   const body = document.getElementById("p-body");
   body.innerHTML = html; body.scrollTop = 0;
-  body.querySelectorAll(".pt").forEach(el=>el.onclick = ev=>{ ev.stopPropagation(); const t=byId.get(el.dataset.nid); select({kind:"node",obj:t}); focusNode(t); });
+  body.querySelectorAll(".pt").forEach(el=>el.onclick = ev=>{ ev.stopPropagation(); const p=partners[+el.dataset.pi]; select({kind:"link",obj:p.l}); });
 }
 function renderLinkPanel(l){
   const a=byId.get(l.sid), b=byId.get(l.tid);
-  document.getElementById("p-title").innerHTML = `${esc(a.name)} <span style="color:#9ca3af">↔</span> ${esc(b.name)}`;
-  document.getElementById("p-meta").innerHTML = `함께 언급 ${l.w}회 · ` + l.cats.map(catBadge).join(" ");
+  document.getElementById("p-title").innerHTML = `<span class="lnknm" data-nid="${l.sid}" title="${esc(a.name)} 상세 보기">${esc(a.name)}</span> <span style="color:#9ca3af">↔</span> <span class="lnknm" data-nid="${l.tid}" title="${esc(b.name)} 상세 보기">${esc(b.name)}</span>`;
+  document.getElementById("p-meta").innerHTML = `함께 언급 ${l.w}회 · ` + l.cats.map(catBadge).join(" ") + ` <span style="color:#9ca3af">· 회사명 클릭 → 상세</span>`;
   document.getElementById("p-body").innerHTML = `<div class="sect"><h3>근거 뉴스 (${l.news.length})</h3><div class="news">` + l.news.map(newsItem).join("") + `</div></div>`;
+  document.querySelectorAll("#p-title .lnknm").forEach(el=>el.onclick = ev=>{ ev.stopPropagation(); const t=byId.get(el.dataset.nid); select({kind:"node",obj:t}); focusNode(t); });
 }
 function focusNode(d){
   const t = d3.zoomTransform(svg.node());
