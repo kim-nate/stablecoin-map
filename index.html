@@ -98,7 +98,7 @@ svg:active{cursor:grabbing}
 <div id="graph"><svg id="svg"></svg></div>
 <div id="legend"></div>
 <div id="stats"></div>
-<div id="hint">원 크기 = 뉴스 수 · 선 굵기 = 함께 언급 횟수 · 선 색 = 주요 카테고리<br>노드 클릭 → 상세 · <b>선(관계) 클릭 → 근거 뉴스</b> · 배경 드래그/휠 → 이동/줌</div>
+<div id="hint"><b>Open Standard</b> 칩 → OUSD 파트너 연결 켜기/끄기 (기본 꺼짐)<br>원 크기 = 뉴스 수 · 선 굵기 = 함께 언급 횟수 · 선 색 = 주요 카테고리<br>노드 클릭 → 상세 · <b>선(관계) 클릭 → 근거 뉴스</b> · 배경 드래그/휠 → 이동/줌</div>
 <div id="tooltip"></div>
 <aside id="panel">
   <div class="head"><h2 id="p-title"></h2><div class="meta" id="p-meta"></div><button class="close" id="p-close">✕</button></div>
@@ -121,6 +121,30 @@ let activeCats = new Set(CATS);
 let activeTypes = new Set(Object.keys(TYPE_COLOR));
 let minW = 1;
 let selected = null; // {kind:'node'|'link', obj}
+
+/* ---------- Open Standard(OUSD) 토글 — 허브 연결이 많아 기본 꺼짐 ---------- */
+const OS_NODE = nodes.find(n=>n.name==="Open Standard");
+const OS_ID = OS_NODE ? OS_NODE.id : null;
+const isOsLink = l => !!OS_ID && (l.sid===OS_ID || l.tid===OS_ID);
+const osOnly = new Set(); // 엣지가 전부 Open Standard 연결뿐인 노드(OS 자신 포함) — 꺼짐 시 숨김
+if(OS_ID){
+  nodes.forEach(d=>{
+    const inc = links.filter(l=>l.sid===d.id||l.tid===d.id);
+    if(inc.length && inc.every(isOsLink)) osOnly.add(d.id);
+  });
+}
+let osOn = false; // 기본 꺼짐
+const nodeVisible = d => activeTypes.has(d.type) && (osOn || !osOnly.has(d.id));
+function setOs(v){
+  osOn = v;
+  const el = document.getElementById("osChip");
+  if(el) el.classList.toggle("off", !osOn);
+  if(!osOn && selected){
+    const o = selected.obj;
+    if((selected.kind==="node" && osOnly.has(o.id)) || (selected.kind==="link" && isOsLink(o))) select(null);
+  }
+  rebuildCache(); refresh();
+}
 
 const esc = s => String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const R = n => 5 + Math.sqrt(n.count)*2.6;
@@ -186,7 +210,7 @@ sim.on("tick", ()=>{
 });
 
 /* ---------- filtering ---------- */
-function linkVisible(l){ return l.w>=minW && l.cats.some(c=>activeCats.has(c)) && activeTypes.has(byId.get(l.sid).type) && activeTypes.has(byId.get(l.tid).type); }
+function linkVisible(l){ return (osOn || !isOsLink(l)) && l.w>=minW && l.cats.some(c=>activeCats.has(c)) && activeTypes.has(byId.get(l.sid).type) && activeTypes.has(byId.get(l.tid).type); }
 const visLinks = () => links.filter(linkVisible);
 function nodeConnected(d){ return visLinks().some(l=>l.sid===d.id||l.tid===d.id); }
 function deg(d){ return links.filter(l=>l.sid===d.id||l.tid===d.id).length; }
@@ -197,16 +221,18 @@ function refresh(){
   const connected = new Set(); vl.forEach(l=>{connected.add(l.sid);connected.add(l.tid);});
   linkSel.style("display", l=>linkVisible(l)?null:"none");
   linkHitSel.style("display", l=>linkVisible(l)?null:"none");
-  nodeSel.style("display", d=>activeTypes.has(d.type)?null:"none");
+  nodeSel.style("display", d=>nodeVisible(d)?null:"none");
   nodeSel.classed("iso", d=>!connected.has(d.id));
+  sim.nodes(nodes.filter(nodeVisible));
   sim.force("link").links(vl);
   sim.alpha(.35).restart();
   applyHighlight();
+  updateLegendCounts();
   updateStats(vl.length);
 }
 
 function updateStats(le){
-  const nv = nodes.filter(d=>activeTypes.has(d.type)).length;
+  const nv = nodes.filter(nodeVisible).length;
   document.getElementById("stats").innerHTML =
     `뉴스 <b>${NEWS.length}</b>건 · 기업/기관 <b>${nv}</b>개 · 연결 <b>${le}</b>개 &nbsp;·&nbsp; 생성 ${GEN} · 출처: Notion 스테이블코인 동향 DB`;
 }
@@ -304,21 +330,38 @@ CATS.forEach(c=>{
   el.onclick = ()=>{ activeCats.has(c)?activeCats.delete(c):activeCats.add(c); el.classList.toggle("off",!activeCats.has(c)); rebuildCache(); refresh(); };
   chipBox.appendChild(el);
 });
+if(OS_ID){
+  const el = document.createElement("div");
+  el.className="chip off"; el.id="osChip";
+  el.title="Open Standard(OUSD) 파트너 연결 표시/숨김 — 기본 숨김";
+  el.innerHTML = `<span class="sw" style="background:#0ea5e9"></span>Open Standard <span style="color:var(--sub);font-size:11px">×${links.filter(isOsLink).length}</span>`;
+  el.onclick = ()=> setOs(!osOn);
+  chipBox.appendChild(el);
+}
 const legend = document.getElementById("legend");
+const legendCounts = {};
 Object.keys(TYPE_COLOR).forEach(t=>{
   const cnt = nodes.filter(n=>n.type===t).length;
   if(!cnt) return;
   const row = document.createElement("div");
   row.className="row"; row.innerHTML = `<span class="dot" style="background:${TYPE_COLOR[t]}"></span>${t}<span class="n">${cnt}</span>`;
+  legendCounts[t] = row.querySelector(".n");
   row.onclick = ()=>{ activeTypes.has(t)?activeTypes.delete(t):activeTypes.add(t); row.classList.toggle("off",!activeTypes.has(t)); rebuildCache(); refresh(); };
   legend.appendChild(row);
 });
+function updateLegendCounts(){
+  Object.entries(legendCounts).forEach(([t,el])=>{
+    el.textContent = nodes.filter(n=>n.type===t && (osOn || !osOnly.has(n.id))).length;
+  });
+}
 const minwEl = document.getElementById("minw");
 minwEl.oninput = ()=>{ minW=+minwEl.value; document.getElementById("minwv").textContent=minW+"회+"; rebuildCache(); refresh(); };
 document.getElementById("reset").onclick = ()=>{
   activeCats = new Set(CATS); activeTypes = new Set(Object.keys(TYPE_COLOR)); minW=1; minwEl.value=1;
   document.getElementById("minwv").textContent="1회+";
   document.querySelectorAll(".chip,.row").forEach(el=>el.classList.remove("off"));
+  osOn = false;
+  const oc = document.getElementById("osChip"); if(oc) oc.classList.add("off");
   select(null);
   svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
   rebuildCache(); refresh();
@@ -332,7 +375,7 @@ search.oninput = ()=>{
   if(!hits.length){ sugg.style.display="none"; return; }
   sugg.innerHTML = hits.map(n=>`<div class="it" data-nid="${n.id}"><span class="dot" style="background:${TYPE_COLOR[n.type]||"#6b7280"}"></span>${esc(n.name)}<span class="cnt">${n.count}건</span></div>`).join("");
   sugg.style.display="block";
-  sugg.querySelectorAll(".it").forEach(el=>el.onclick=()=>{ const n=byId.get(el.dataset.nid); sugg.style.display="none"; search.value=n.name; select({kind:"node",obj:n}); focusNode(n); });
+  sugg.querySelectorAll(".it").forEach(el=>el.onclick=()=>{ const n=byId.get(el.dataset.nid); sugg.style.display="none"; search.value=n.name; if(!osOn && osOnly.has(n.id)) setOs(true); select({kind:"node",obj:n}); focusNode(n); });
 };
 document.addEventListener("click", e=>{ if(!e.target.closest(".searchwrap")) sugg.style.display="none"; });
 
