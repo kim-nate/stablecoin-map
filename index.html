@@ -226,7 +226,11 @@ const nodeSel = gNode.selectAll("g").data(nodes).join("g")
     .on("drag",(e,d)=>{ d.fx=e.x; d.fy=e.y; })
     .on("end",(e,d)=>{ if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
 
-nodeSel.append("circle")
+nodeSel.append("circle").attr("class","halo")
+  .attr("r", 0).attr("opacity", .22)
+  .attr("fill", d=>TYPE_COLOR[d.type]||TYPE_COLOR["기타"])
+  .style("stroke","none").style("pointer-events","none");
+nodeSel.append("circle").attr("class","main")
   .attr("r", d=>R(d))
   .attr("fill", d=>TYPE_COLOR[d.type]||TYPE_COLOR["기타"])
   .on("click",(e,d)=>{ e.stopPropagation(); select({kind:"node",obj:d}); })
@@ -240,7 +244,7 @@ sim.on("tick", ()=>{
   linkSel.attr("x1",l=>l.source.x).attr("y1",l=>l.source.y).attr("x2",l=>l.target.x).attr("y2",l=>l.target.y);
   linkHitSel.attr("x1",l=>l.source.x).attr("y1",l=>l.source.y).attr("x2",l=>l.target.x).attr("y2",l=>l.target.y);
   nodeSel.attr("transform", d=>`translate(${d.x},${d.y})`);
-  if(THEME==="glow" && (++tickN & 3)===0) drawHulls();
+  if(THEME==="glow" && (++tickN & 7)===0) drawHulls();
 });
 
 /* ---------- 클러스터 후광 (글로우 모드) — OS 연결 제외 가중 라벨 전파로 자연 군집 탐지 ---------- */
@@ -269,9 +273,8 @@ const clusters = (()=>{
     });
 })();
 const hullSel = clusters.map(c=> gHull.append("path")
-  .attr("fill",c.color).attr("fill-opacity",.07)
-  .attr("stroke",c.color).attr("stroke-opacity",.10).attr("stroke-width",36).attr("stroke-linejoin","round")
-  .attr("filter","url(#hullblur)"));
+  .attr("fill",c.color).attr("fill-opacity",.055)
+  .attr("stroke",c.color).attr("stroke-opacity",.07).attr("stroke-width",52).attr("stroke-linejoin","round").attr("stroke-linecap","round"));
 const hullLbl = clusters.map(c=> gHull.append("text").text(c.label)
   .attr("text-anchor","middle").attr("font-size",11).attr("font-weight",600)
   .attr("fill",c.color).attr("fill-opacity",.8).attr("opacity",0));
@@ -296,14 +299,14 @@ function syncParticles(lset){
     if(pTimer){ pTimer.stop(); pTimer = null; }
     return;
   }
-  const ls = [...lset].sort((a,b)=>b.w-a.w).slice(0,48);
+  const ls = [...lset].sort((a,b)=>b.w-a.w).slice(0,32);
   particles = [];
   gPart.selectAll("circle").remove();
   ls.forEach(l=>{
-    const cnt = Math.min(3, 1 + Math.floor(l.w/3));
+    const cnt = Math.min(2, 1 + Math.floor(l.w/4));
     for(let k=0;k<cnt;k++){
-      const el = gPart.append("circle").attr("r",2.1)
-        .attr("fill", CAT_COLOR[l.cat]||"#9ca3af").attr("filter","url(#nglow)").node();
+      const el = gPart.append("circle").attr("r",2.2)
+        .attr("fill", CAT_COLOR[l.cat]||"#9ca3af").attr("opacity",.95).node();
       particles.push({ l, el, t: Math.random(), sp: .0045 + .0035*Math.random() });
     }
   });
@@ -508,9 +511,10 @@ function applyTheme(){
   TYPE_COLOR = PALETTES[THEME].type; CAT_COLOR = PALETTES[THEME].cat;
   document.getElementById("thClassic").classList.toggle("on", THEME==="classic");
   document.getElementById("thGlow").classList.toggle("on", THEME==="glow");
-  nodeSel.select("circle")
+  nodeSel.select("circle.main").attr("fill", d=>TYPE_COLOR[d.type]||TYPE_COLOR["기타"]);
+  nodeSel.select("circle.halo")
     .attr("fill", d=>TYPE_COLOR[d.type]||TYPE_COLOR["기타"])
-    .attr("filter", THEME==="glow" ? "url(#nglow)" : null);
+    .attr("r", d=>THEME==="glow" ? R(d)*1.85 : 0);
   linkSel.attr("stroke", l=>CAT_COLOR[l.cat]||PALETTES[THEME].linkBase);
   document.querySelectorAll("#catChips .chip .sw").forEach(sw=>{ const c=sw.parentElement.dataset.c; if(c && CAT_COLOR[c]) sw.style.background = CAT_COLOR[c]; });
   document.querySelectorAll("#legend .row").forEach(r=>{ const t=r.dataset.t; if(t && TYPE_COLOR[t]) r.querySelector(".dot").style.background = TYPE_COLOR[t]; });
@@ -531,11 +535,13 @@ document.getElementById("thGlow").onclick = ()=>setTheme("glow");
 /* ---------- 입장 애니메이션 (글로우 첫 로드) ---------- */
 function entrance(){
   if(THEME!=="glow") return;
-  const circ = nodeSel.select("circle");
+  const circ = nodeSel.select("circle.main");
   circ.attr("r", 0);
+  nodeSel.select("circle.halo").attr("opacity", 0);
   nodeSel.select("text").attr("opacity", 0);
   gLink.attr("opacity", 0);
   circ.transition().duration(750).delay((d,i)=>200+Math.min(i*5,900)).ease(d3.easeCubicOut).attr("r", d=>R(d));
+  nodeSel.select("circle.halo").transition().duration(750).delay((d,i)=>350+Math.min(i*5,900)).attr("opacity", .22);
   nodeSel.select("text").transition().duration(600).delay((d,i)=>600+Math.min(i*5,900)).attr("opacity", 1);
   gLink.transition().duration(900).delay(500).attr("opacity", 1);
 }
