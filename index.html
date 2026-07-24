@@ -137,7 +137,7 @@ body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic 
     <div class="hc-row"><svg width="30" height="16" viewBox="0 0 30 16"><line x1="4" y1="12" x2="26" y2="4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity=".6"/><circle cx="4" cy="12" r="2.4" fill="currentColor" opacity=".5"/><circle cx="26" cy="4" r="2.4" fill="currentColor" opacity=".5"/></svg><span><b>선 클릭</b> → 두 회사의 근거 뉴스</span></div>
     <div class="hc-row"><svg width="30" height="16" viewBox="0 0 30 16"><path d="M9 8h12M17 4l4 4-4 4M13 4L9 8l4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/></svg><span>배경 <b>드래그·휠</b> → 이동·줌</span></div>
     <div class="hc-sec">필터 · 모드</div>
-    <div class="hc-row"><svg width="30" height="16" viewBox="0 0 30 16"><circle cx="8" cy="8" r="3" fill="#0ea5e9" opacity=".85"/><path d="M13 8h5M18 5.5 21 8l-3 2.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/><circle cx="25" cy="8" r="2.2" fill="currentColor" opacity=".4"/></svg><span><b>Open Standard</b> 칩 → OUSD 파트너 연결 (기본 꺼짐)</span></div>
+    <div class="hc-row"><svg width="30" height="16" viewBox="0 0 30 16"><circle cx="8" cy="8" r="3" fill="#0ea5e9" opacity=".85"/><path d="M13 8h5M18 5.5 21 8l-3 2.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/><circle cx="25" cy="8" r="2.2" fill="currentColor" opacity=".4"/></svg><span><b>Open Standard</b> 칩 → OUSD 파트너 연결 (기본 꺼짐)</span></div>     <div class="hc-row"><svg width="30" height="16" viewBox="0 0 30 16"><line x1="4" y1="8" x2="26" y2="8" stroke="#f59e0b" stroke-width="2.4" stroke-linecap="round"/></svg><span><b>확정 관계</b> 칩 → 큐레이션 관계 레이어 (기본 켜짐)</span></div>
     <div class="hc-row"><svg width="30" height="16" viewBox="0 0 30 16"><circle cx="9" cy="8" r="4.6" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".55"/><path d="M9 5.2v-2M9 12.8v2M5.2 8h-2M14.8 8h-2" stroke="currentColor" stroke-width="1.2" opacity=".55"/><path d="M24.5 3.5 20 9h3l-1.5 3.8L26 7h-3z" fill="currentColor" opacity=".55"/></svg><span><b>클래식/글로우</b> 모드 전환 (선택 기억)</span></div>
     <div class="hc-row"><svg width="30" height="16" viewBox="0 0 30 16"><line x1="3" y1="8" x2="27" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".35"/><circle cx="12" cy="8" r="3.4" fill="currentColor" opacity=".6"/></svg><span><b>최소 슬라이더</b> → N회 이상 관계만</span></div>
   </div>
@@ -155,16 +155,16 @@ const GEN = "2026-07-22";
 /* ---------- 테마 팔레트: 클래식(기존) / 글로우(다크) ---------- */
 const PALETTES = {
   classic: {
-    type: {"금융기관":"#2563eb","국내 기업":"#059669","해외 기업":"#7c3aed","블록체인/크립토":"#ea580c","정부/규제기관":"#dc2626","기타":"#6b7280"},
-    cat: {"기업 제휴/MOU":"#10b981","투자/펀딩":"#f59e0b","기술/인프라":"#3b82f6","제품/서비스 출시":"#8b5cf6","규제/정책":"#ef4444","시장 동향":"#b6bcc6"},
+    type: {"금융기관":"#2563eb","국내 기업":"#059669","해외 기업":"#7c3aed","블록체인/크립토":"#ea580c","정부/규제기관":"#dc2626","개념/프로젝트":"#0e7490","기타":"#6b7280"},
+    cat: {"기업 제휴/MOU":"#10b981","투자/펀딩":"#f59e0b","기술/인프라":"#3b82f6","제품/서비스 출시":"#8b5cf6","규제/정책":"#ef4444","시장 동향":"#b6bcc6","의미 관계":"#d97706"},
     linkBase: "#cbd5e1",
-    linkOp: l => l.cat==="시장 동향" ? .30 : .5
+    linkOp: l => l.sem ? .85 : (l.cat==="시장 동향" ? .30 : .5)
   },
   glow: {
-    type: {"금융기관":"#5b9bff","국내 기업":"#3ddc97","해외 기업":"#b48bff","블록체인/크립토":"#ffa14e","정부/규제기관":"#ff6b6b","기타":"#8b98b8"},
-    cat: {"기업 제휴/MOU":"#2dd4bf","투자/펀딩":"#fbbf24","기술/인프라":"#5ba8ff","제품/서비스 출시":"#c084fc","규제/정책":"#fb7185","시장 동향":"#64748b"},
+    type: {"금융기관":"#5b9bff","국내 기업":"#3ddc97","해외 기업":"#b48bff","블록체인/크립토":"#ffa14e","정부/규제기관":"#ff6b6b","개념/프로젝트":"#38cfe0","기타":"#8b98b8"},
+    cat: {"기업 제휴/MOU":"#2dd4bf","투자/펀딩":"#fbbf24","기술/인프라":"#5ba8ff","제품/서비스 출시":"#c084fc","규제/정책":"#fb7185","시장 동향":"#64748b","의미 관계":"#fbbf24"},
     linkBase: "#334766",
-    linkOp: l => l.cat==="시장 동향" ? .34 : .58
+    linkOp: l => l.sem ? .9 : (l.cat==="시장 동향" ? .34 : .58)
   }
 };
 let THEME = "glow"; // 기본 글로우
@@ -175,6 +175,24 @@ const IMP_COLOR = {"상":"#dc2626","중":"#f59e0b","하":"#9ca3af"};
 const CATS = ["기업 제휴/MOU","투자/펀딩","기술/인프라","제품/서비스 출시","규제/정책","시장 동향"];
 
 const nodes = DATA.nodes, links = DATA.links, NEWS = DATA.news;
+/* ---------- 확정 관계 레이어 (큐레이션) ---------- */
+const SEM_GEN = "2026-07-24";
+const SEM = {"nodes":[{"id": "한국은행", "type": "기관"}, {"id": "금융위원회", "type": "기관"}, {"id": "BIS", "type": "기관"}, {"id": "프로젝트 한강", "type": "프로젝트"}, {"id": "프로젝트 아고라", "type": "프로젝트"}, {"id": "예금토큰", "type": "개념"}, {"id": "CBDC", "type": "개념"}, {"id": "원화 스테이블코인", "type": "개념"}, {"id": "디지털자산기본법", "type": "이슈"}, {"id": "VASP 제도", "type": "개념"}, {"id": "혁신금융서비스", "type": "개념"}, {"id": "글로벌 스테이블코인 결제", "type": "개념"}, {"id": "자산 토큰화", "type": "개념"}, {"id": "신한은행", "type": "기업"}, {"id": "LG CNS", "type": "기업"}, {"id": "수호아이오", "type": "기업"}, {"id": "테더", "type": "기업"}, {"id": "서클", "type": "기업"}, {"id": "Meta", "type": "기업"}, {"id": "Stripe", "type": "기업"}, {"id": "Visa", "type": "기업"}, {"id": "하나금융그룹", "type": "기업"}, {"id": "KB금융지주", "type": "기업"}, {"id": "카카오", "type": "기업"}, {"id": "두나무", "type": "기업"}, {"id": "네이버", "type": "기업"}, {"id": "케이뱅크", "type": "기업"}, {"id": "토스", "type": "기업"}, {"id": "KODA", "type": "기업"}, {"id": "KDAC", "type": "기업"}, {"id": "BDACS", "type": "기업"}, {"id": "비트고코리아", "type": "기업"}],"edges":[{"source": "한국은행", "target": "프로젝트 한강", "label": "주관"}, {"source": "금융위원회", "target": "프로젝트 한강", "label": "공동 추진·혁신금융 지정"}, {"source": "프로젝트 한강", "target": "예금토큰", "label": "실증 대상"}, {"source": "프로젝트 한강", "target": "CBDC", "label": "뒷단 청산(wCBDC)"}, {"source": "신한은행", "target": "프로젝트 한강", "label": "참여 은행·땡겨요 사용처"}, {"source": "신한은행", "target": "혁신금융서비스", "label": "지정(2024.10)"}, {"source": "LG CNS", "target": "프로젝트 한강", "label": "시스템 구축"}, {"source": "수호아이오", "target": "프로젝트 한강", "label": "참여 기술사(자사 주장)"}, {"source": "한국은행", "target": "프로젝트 아고라", "label": "참여"}, {"source": "BIS", "target": "프로젝트 아고라", "label": "주도"}, {"source": "예금토큰", "target": "원화 스테이블코인", "label": "공존(투트랙)"}, {"source": "디지털자산기본법", "target": "원화 스테이블코인", "label": "제도화 근거"}, {"source": "VASP 제도", "target": "글로벌 스테이블코인 결제", "label": "국내 수용 관문"}, {"source": "자산 토큰화", "target": "예금토큰", "label": "우선 결제수단(한은)"}, {"source": "테더", "target": "글로벌 스테이블코인 결제", "label": "USDT 발행"}, {"source": "서클", "target": "글로벌 스테이블코인 결제", "label": "USDC 발행"}, {"source": "Meta", "target": "서클", "label": "크리에이터 정산 통화"}, {"source": "Meta", "target": "Stripe", "label": "정산 인프라"}, {"source": "Visa", "target": "글로벌 스테이블코인 결제", "label": "VSP 플랫폼"}, {"source": "하나금융그룹", "target": "원화 스테이블코인", "label": "컨소시엄 진영"}, {"source": "네이버", "target": "하나금융그룹", "label": "진영 참여"}, {"source": "두나무", "target": "하나금융그룹", "label": "진영 참여"}, {"source": "케이뱅크", "target": "하나금융그룹", "label": "합류 임박(보도)"}, {"source": "KB금융지주", "target": "원화 스테이블코인", "label": "컨소시엄 진영"}, {"source": "토스", "target": "KB금융지주", "label": "간담회 참여"}, {"source": "카카오", "target": "원화 스테이블코인", "label": "동맹 제안(우리·농협)"}, {"source": "KB금융지주", "target": "KODA", "label": "커스터디(공동설립)"}, {"source": "신한은행", "target": "KDAC", "label": "커스터디(주주)"}, {"source": "테더", "target": "원화 스테이블코인", "label": "한국 상표 출원"}]};
+const SEM_ALIAS = {"BIS":"BIS (국제결제은행)","테더":"테더 (Tether)","서클":"써클 (Circle)","Stripe":"스트라이프 (Stripe)","Visa":"비자 (Visa)"};
+(function(){
+  const byName = new Map(nodes.map(n=>[n.name,n]));
+  const resolve = {};
+  SEM.nodes.forEach((sn,i)=>{
+    const nm2 = SEM_ALIAS[sn.id]||sn.id;
+    let ex = byName.get(nm2);
+    if(!ex){ ex = {id:"sem-"+i, name:sn.id, type:"개념/프로젝트", count:2, news:[], sem:true}; nodes.push(ex); byName.set(sn.id, ex); }
+    resolve[sn.id] = ex;
+  });
+  SEM.edges.forEach(e=>{
+    const a = resolve[e.source], b = resolve[e.target];
+    if(a && b) links.push({s:a.id, t:b.id, w:2, cat:"의미 관계", cats:["의미 관계"], news:[], sem:true, label:e.label});
+  });
+})();
 const byId = new Map(nodes.map(n=>[n.id,n]));
 links.forEach(l=>{l.sid=l.s; l.tid=l.t; l.source=l.s; l.target=l.t;});
 
@@ -195,7 +213,7 @@ if(OS_ID){
   });
 }
 let osOn = false; // 기본 꺼짐
-const nodeVisible = d => activeTypes.has(d.type) && (osOn || !osOnly.has(d.id));
+const nodeVisible = d => activeTypes.has(d.type) && (osOn || !osOnly.has(d.id)) && (semOn || !d.sem);
 function setOs(v){
   osOn = v;
   const el = document.getElementById("osChip");
@@ -203,6 +221,19 @@ function setOs(v){
   if(!osOn && selected){
     const o = selected.obj;
     if((selected.kind==="node" && osOnly.has(o.id)) || (selected.kind==="link" && isOsLink(o))) select(null);
+  }
+  rebuildCache(); refresh();
+}
+
+/* 확정 관계 레이어 토글 — 기본 켜짐 */
+let semOn = true;
+function setSem(v){
+  semOn = v;
+  const el = document.getElementById("semChip");
+  if(el) el.classList.toggle("off", !semOn);
+  if(!semOn && selected){
+    const o = selected.obj;
+    if((selected.kind==="node" && o.sem) || (selected.kind==="link" && o.sem)) select(null);
   }
   rebuildCache(); refresh();
 }
@@ -238,7 +269,7 @@ const linkSel = gLink.selectAll("line").data(links).join("line")
   .on("click", linkClick).on("mousemove", linkMove).on("mouseout", linkOut);
 
 function linkClick(e,l){ e.stopPropagation(); select({kind:"link",obj:l}); }
-function linkMove(e,l){ if(!selected) hoverLink(l); tip(e, `<b>${esc(nm(l.sid))} ↔ ${esc(nm(l.tid))}</b><div class="tt-sub">함께 언급 ${l.w}회 · ${esc(l.cat)} · 클릭 → 근거 뉴스</div>`); }
+function linkMove(e,l){ if(!selected) hoverLink(l); tip(e, l.sem ? `<b>${esc(nm(l.sid))} → ${esc(nm(l.tid))}</b><div class="tt-sub">확정 관계 · ${esc(l.label)}</div>` : `<b>${esc(nm(l.sid))} ↔ ${esc(nm(l.tid))}</b><div class="tt-sub">함께 언급 ${l.w}회 · ${esc(l.cat)} · 클릭 → 근거 뉴스</div>`); }
 function linkOut(){ hideTip(); if(!selected) applyHighlight(); }
 
 /* 넓은 클릭 히트영역 (투명 선) — 얇은 엣지도 쉽게 클릭 */
@@ -281,7 +312,7 @@ sim.on("tick", ()=>{
 const CLUSTER_COLORS = ["#6366f1","#0ea5e9","#10b981","#f59e0b","#ec4899","#22d3ee"];
 const clusters = (()=>{
   const nbr = {};
-  links.forEach(l=>{ if(isOsLink(l)) return; (nbr[l.sid]=nbr[l.sid]||[]).push([l.tid,l.w]); (nbr[l.tid]=nbr[l.tid]||[]).push([l.sid,l.w]); });
+  links.forEach(l=>{ if(isOsLink(l)||l.sem) return; (nbr[l.sid]=nbr[l.sid]||[]).push([l.tid,l.w]); (nbr[l.tid]=nbr[l.tid]||[]).push([l.sid,l.w]); });
   const lab = {}; nodes.forEach(n=>lab[n.id]=n.id);
   for(let it=0; it<14; it++){
     let changed = false;
@@ -352,7 +383,7 @@ function syncParticles(lset){
 }
 
 /* ---------- filtering ---------- */
-function linkVisible(l){ return (osOn || !isOsLink(l)) && l.w>=minW && l.cats.some(c=>activeCats.has(c)) && activeTypes.has(byId.get(l.sid).type) && activeTypes.has(byId.get(l.tid).type); }
+function linkVisible(l){ if(l.sem) return semOn && activeTypes.has(byId.get(l.sid).type) && activeTypes.has(byId.get(l.tid).type); return (osOn || !isOsLink(l)) && l.w>=minW && l.cats.some(c=>activeCats.has(c)) && activeTypes.has(byId.get(l.sid).type) && activeTypes.has(byId.get(l.tid).type); }
 const visLinks = () => links.filter(linkVisible);
 function nodeConnected(d){ return visLinks().some(l=>l.sid===d.id||l.tid===d.id); }
 function deg(d){ return links.filter(l=>l.sid===d.id||l.tid===d.id).length; }
@@ -376,7 +407,7 @@ function refresh(){
 function updateStats(le){
   const nv = nodes.filter(nodeVisible).length;
   document.getElementById("stats").innerHTML =
-    `뉴스 <b>${NEWS.length}</b>건 · 기업/기관 <b>${nv}</b>개 · 연결 <b>${le}</b>개 &nbsp;·&nbsp; 생성 ${GEN} · 출처: Notion 스테이블코인 동향 DB`;
+    `뉴스 <b>${NEWS.length}</b>건 · 기업/기관 <b>${nv}</b>개 · 연결 <b>${le}</b>개 &nbsp;·&nbsp; 생성 ${GEN} · 확정 관계 ${SEM_GEN} · 출처: Notion 스테이블코인 동향 DB`;
 }
 
 /* ---------- highlight ---------- */
@@ -468,7 +499,7 @@ function renderLinkPanel(l){
   const a=byId.get(l.sid), b=byId.get(l.tid);
   document.getElementById("p-title").innerHTML = `<span class="lnknm" data-nid="${l.sid}" title="${esc(a.name)} 상세 보기">${esc(a.name)}</span> <span style="color:#9ca3af">↔</span> <span class="lnknm" data-nid="${l.tid}" title="${esc(b.name)} 상세 보기">${esc(b.name)}</span>`;
   document.getElementById("p-meta").innerHTML = `함께 언급 ${l.w}회 · ` + l.cats.map(catBadge).join(" ") + ` <span style="color:#9ca3af">· 회사명 클릭 → 상세</span>`;
-  document.getElementById("p-body").innerHTML = `<div class="sect"><h3>근거 뉴스 (${l.news.length})</h3><div class="news">` + l.news.map(newsItem).join("") + `</div></div>`;
+  document.getElementById("p-body").innerHTML = l.sem ? `<div class="sect"><h3>확정 관계</h3><div style="font-size:13px;line-height:1.7;padding:2px 2px 6px">${esc(l.label)}<br><span style="color:var(--sub);font-size:12px">큐레이션 관계 레이어 · 갱신 ${SEM_GEN}</span></div></div>` : `<div class="sect"><h3>근거 뉴스 (${l.news.length})</h3><div class="news">` + l.news.map(newsItem).join("") + `</div></div>`;
   document.querySelectorAll("#p-title .lnknm").forEach(el=>el.onclick = ev=>{ ev.stopPropagation(); const t=byId.get(el.dataset.nid); select({kind:"node",obj:t}); focusNode(t); });
 }
 function focusNode(d){
@@ -492,6 +523,14 @@ if(OS_ID){
   el.title="Open Standard(OUSD) 파트너 연결 표시/숨김 — 기본 숨김";
   el.innerHTML = `<span class="sw" style="background:#0ea5e9"></span>Open Standard <span style="color:var(--sub);font-size:11px">×${links.filter(isOsLink).length}</span>`;
   el.onclick = ()=> setOs(!osOn);
+  chipBox.appendChild(el);
+}
+{
+  const el = document.createElement("div");
+  el.className="chip"; el.id="semChip";
+  el.title="확정 관계 레이어(큐레이션) 표시/숨김 — 기본 표시";
+  el.innerHTML = `<span class="sw" style="background:${CAT_COLOR["의미 관계"]}"></span>확정 관계 <span style="color:var(--sub);font-size:11px">×${links.filter(l=>l.sem).length}</span>`;
+  el.onclick = ()=> setSem(!semOn);
   chipBox.appendChild(el);
 }
 const legend = document.getElementById("legend");
